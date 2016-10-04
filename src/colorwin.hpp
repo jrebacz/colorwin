@@ -65,6 +65,16 @@ namespace colorwin
     public:
         color(CW_COLORS color) : m_color(color), m_console_handle(INVALID_HANDLE_VALUE)
         {
+            CONSOLE_SCREEN_BUFFER_INFO console_info;
+            m_console_handle = GetStdHandle(STD_OUTPUT_HANDLE);
+            if (!GetConsoleScreenBufferInfo(m_console_handle, &console_info))
+            {
+                m_console_handle = GetStdHandle(STD_ERROR_HANDLE);
+                if (!GetConsoleScreenBufferInfo(m_console_handle, &console_info)) // maybe standard output device has been redirected, try the standard error device
+                {
+                    m_console_handle = INVALID_HANDLE_VALUE;
+                }
+            }
         }
 
         ~color()
@@ -78,22 +88,13 @@ namespace colorwin
         }
 
     private:
-        void change_color()
+        void change_color() const
         {
+            if (m_console_handle == INVALID_HANDLE_VALUE)
+                return; // Can't get console info, can't change color.
             CONSOLE_SCREEN_BUFFER_INFO console_info;
-
-            m_console_handle = GetStdHandle(STD_OUTPUT_HANDLE);
-            if (!GetConsoleScreenBufferInfo(m_console_handle, &console_info))
-            {
-                m_console_handle = GetStdHandle(STD_ERROR_HANDLE);
-                if (!GetConsoleScreenBufferInfo(m_console_handle, &console_info)) // maybe standard output device has been redirected, try the standard error device
-                {
-                    m_console_handle = INVALID_HANDLE_VALUE;
-                    return; // Can't get console info, can't change color.
-                }
-            }
-
-            // save the current attributes, which include color
+            GetConsoleScreenBufferInfo(m_console_handle, &console_info);
+            // save the current attributes for restoration on destruction.
             get_color_stack().push(console_info.wAttributes);
             SetConsoleTextAttribute(m_console_handle, 0x0F & m_color);
         }
@@ -101,10 +102,10 @@ namespace colorwin
         color(color &);
         color& operator=(color);
 
-        std::stack<int>& get_color_stack()
+        static std::stack<WORD>& get_color_stack()
         {
             // Use this instead of static member to avoid multiply defined symbols.
-            static std::stack<int> color_stack;
+            static std::stack<WORD> color_stack;
             return color_stack;
         }
 
@@ -112,7 +113,7 @@ namespace colorwin
         const CW_COLORS m_color;
 
         friend class withcolor;
-        template<typename charT, typename traits> friend std::basic_ostream<charT, traits> & operator<<(std::basic_ostream<charT, traits> &lhs, colorwin::color  &rhs);
+        template<typename charT, typename traits> friend std::basic_ostream<charT, traits> & operator<<(std::basic_ostream<charT, traits> &lhs, colorwin::color const &rhs);
     };
 
     // Example usage : 
@@ -157,7 +158,7 @@ namespace colorwin
     };
 
     // cout << color(red) -> operator<<(cout, colorwin::color(red))
-    template<typename charT, typename traits> std::basic_ostream<charT, traits> & operator<<(std::basic_ostream<charT, traits> &lhs, colorwin::color  &rhs)
+    template<typename charT, typename traits> std::basic_ostream<charT, traits> & operator<<(std::basic_ostream<charT, traits> &lhs, colorwin::color const &rhs)
     {
         rhs.change_color();
         return lhs;
