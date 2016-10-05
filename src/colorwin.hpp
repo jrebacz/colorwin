@@ -96,7 +96,7 @@ namespace colorwin
             GetConsoleScreenBufferInfo(m_console_handle, &console_info);
             // save the current attributes for restoration on destruction.
             get_color_stack().push(console_info.wAttributes);
-            SetConsoleTextAttribute(m_console_handle, 0x0F & m_color);
+            SetConsoleTextAttribute(m_console_handle, 0x0F & m_color | 0xf0 & console_info.wAttributes);    // save the background color
         }
 
         color(color &);
