@@ -141,6 +141,7 @@ namespace colorwin
             return ret;
         }
 
+        #if _MSC_VER >= 1400    // printf_s offered in Visual Studio 2005
         int printf_s(const char *format, ...)
         {
             va_list vlist;
@@ -149,6 +150,7 @@ namespace colorwin
             va_end(vlist);
             return ret;
         }
+        #endif
 
     private:
         withcolor(withcolor &);
