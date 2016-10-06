@@ -7,6 +7,8 @@ Scoped coloring means that a colorwin object is created to change the console co
 # examples
 
 ## example 1: DemoAllColors
+![example_1_DemoAllColors](https://github.com/jrebacz/colorwin/blob/readme_content/images/example_1_DemoAllColors.png)
+
 
 ```C++
 // Show text in each color.
@@ -28,6 +30,7 @@ void DemoAllColors()
 ```
 
 ## example 2: DemoException
+![example_2_DemoException](https://github.com/jrebacz/colorwin/blob/readme_content/images/example_2_DemoException.png)
 ```C++
 // Demonstrate that scoped colors revert to the original color
 // if an exception is thrown "unexpectedly".
@@ -53,6 +56,7 @@ void DemoException()
 ```
 
 ## example 3: DemoScoped
+![example_3_DemoScoped](https://github.com/jrebacz/colorwin/blob/readme_content/images/example_3_DemoScoped.png)
 ```C++
 // Demonstrate multiple levels of scoped console colors.
 void DemoScoped()
