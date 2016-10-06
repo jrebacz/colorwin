@@ -4,7 +4,83 @@ colorwin is a small Windows C++ library under the MIT license that provides scop
 # colorwin's scoped color control
 Scoped coloring means that a colorwin object is created to change the console color and the color is reset back to the original color on destruction of that same object.  Thus, there is less chance of accidentally coloring output you don't mean to.  For example, if your project is using exceptions and using colorwin objects, an exception would reset the console color through C++'s automatic destruction of stack objects (C++ stack unwinding).  If you are adding console coloring to existing projects, you never have to worry about resetting the color back to normal; that means 1 change instead of 2 changes, meaning less opportunities for mistakes and omissions.
 
-# Caveats
+# examples
+
+## example 1: DemoAllColors
+
+```C++
+// Show text in each color.
+void DemoAllColors()
+{
+    cout << color(white) << "DemoAllColors()\n";
+    cout << color(red) << "red\n";
+    cout << color(yellow) << "yellow\n";
+    cout << color(green) << "green\n";
+    cout << color(cyan) << "cyan\n";
+    cout << color(blue) << "blue\n";
+    cout << color(magenta) << "magenta\n";
+    cout << color(white) << "white\n";
+    cout << color(gray) << "gray\n";
+    cout << color(grey) << "grey\n";
+    cout << color(dark_gray) << "dark_gray\n";
+    cout << color(dark_grey) << "dark_grey\n";
+}
+```
+
+## example 2: DemoException
+```C++
+// Demonstrate that scoped colors revert to the original color
+// if an exception is thrown "unexpectedly".
+void DemoException()
+{
+    cout << color(white) << "DemoException()\n";
+    try
+    {
+        cout << "This is the original text color.\n";
+        withcolor scoped(cyan);
+        cout << "Connection " << color(green) << "OK";
+        cout << " attempting transfer.\n";
+        throw exception("Connection lost"); //oops, I hope the console color doesn't remain cyan!
+        cout << "Transfer completed.\n";
+    }
+    catch (exception &e)
+    {
+        cout << color(red) << "ERROR: " << e.what() << "\n";
+        cout << "Transfer aborted.\n";
+    }
+    cout << "Text color is back to the original color.\n";
+}
+```
+
+## example 3: DemoScoped
+```C++
+// Demonstrate multiple levels of scoped console colors.
+void DemoScoped()
+{
+    cout << color(white) << "DemoScoped()\n";
+    {
+        withcolor scoped(red);
+        cout << "|red\n";
+        cout << "|red again\n";
+        {
+            withcolor scoped(yellow);
+            cout << "||now yellow\n";
+            {
+                withcolor scoped(cyan);
+                cout << "|||now cyan\n";
+                withcolor(white).printf("|||| withcolor(white).printf(...)\n");
+                printf("|||::printf cyan\n");
+
+            }
+        }
+        cout << "|now back to red.\n";
+    }
+    cout << "now back to normal\n";
+}
+```
+
+# caveats
 * Your console application should protect against multiple threads writing to the console concurrently.  In that case, colorwin should only be used within that protection.
 * Dark colors are commented out in the color enumeration to discourage you from using them.  You may comment them in, but they are not very readable.
 * Changing the background color is not enabled in colorwin.  Users change the default background color of the command prompt, and Powershell's background is blue by default.  Setting the text background color will result in filled rectangles around text.
+
